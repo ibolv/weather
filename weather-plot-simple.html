@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line Chart Plot</title>
+</head>
+<body>
+<script type="module">
+    //import * as d3 from "https://cdn.skypack.dev/d3@7";
+    import * as Plot from "https://cdn.skypack.dev/@observablehq/plot@0.6";
+
+    let glazovData;
+    fetch('http://api.openweathermap.org/data/2.5/forecast?q=Glazov,ru&lang=ru&appid=774ec62da0aee33b54142870a05ad0d9')
+        .then((response) => response.json())
+        .then((data) => {
+            glazovData = data;
+        });
+
+    // Запрос данных
+    fetch('http://api.openweathermap.org/data/2.5/forecast?q=Izhevsk,ru&lang=ru&appid=774ec62da0aee33b54142870a05ad0d9')
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            console.log(glazovData);
+            let pointsGlazov = glazovData.list.map(d => {return {date:d.dt_txt, cause: "Glazov", temp:(d.main.temp-273)}});
+            let pointsIzh = data.list.map(d => {return {date:d.dt_txt, cause: "Izhevsk", temp:(d.main.temp-273)}});
+            const points = [...pointsIzh, ...pointsGlazov];
+            //points.push(...pointsGlazov);
+            console.log(points);
+            const myPlot = Plot.plot({
+                x: {
+                    grid: true,
+                    label: "Дата"
+                },
+                y: {
+                    grid: true,
+                    label: "Температура, гр.Цельсия",
+                },
+                marks: [
+                    //Plot.line(data.list, {x: "dt", y: "main.temp"})
+                    Plot.line(points, {x: "date", y: "temp", stroke: "cause", marker: "circle"})
+                    //Plot.areaY(someAapl, {x: "Date", y: "Close", fill: "#ccc"}),
+                    //Plot.lineY(someAapl, {x: "Date", y: "Close"}),
+                     //Plot.ruleY([0])
+                ]
+            })
+
+            // Добавим Plot в элемент div на странице
+            document.getElementById("weatherPlot").append(myPlot);
+        });
+</script>
+
+<h3>Прогноз погоды на 5 дней. Ижевск</h3>
+<div id="weatherPlot"></div>
+</body>
+</html>
